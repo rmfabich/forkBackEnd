@@ -16,7 +16,6 @@
     "jsonwebtoken": "^8.2.0",
     "mongodb": "^3.0.4",
     "nodemon": "^1.17.1",
-    "path": "^0.12.7"
   },
   "proxy": "localhost:5000",
   "devDependencies": {},
