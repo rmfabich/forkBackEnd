@@ -32,6 +32,7 @@ function verifyToken(req, res, next) {
     }
 }
 
+
 MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds259768.mlab.com:59768/fork_demo_app`, (err, client) => {
     if (err) return console.log(err)
     db = client.db("fork_demo_app")// whatever your database name is
@@ -40,7 +41,6 @@ MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds2
         console.log("listening on 5000")
     })
 })
-
 
 
 //Creates a new account
