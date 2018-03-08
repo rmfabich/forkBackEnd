@@ -38,7 +38,7 @@ MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds2
     db = client.db("fork_demo_app")// whatever your database name is
     app.listen(process.env.PORT || 5000, () => {
         //console.log(process.env.PORT)
-        console.log("listening on 5000")
+        console.log("listening on" + process.env.PORT || 5000);
     })
 })
 
@@ -95,5 +95,5 @@ app.post('/logIn', (req, res) => {
     })
 
 app.get("/", (req, res) => {
-    res.sendfile("index.html")
+    res.sendfile("./build/index.html")
 })
