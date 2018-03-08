@@ -95,5 +95,5 @@ app.post('/logIn', (req, res) => {
     })
 
 app.get("/", (req, res) => {
-    res.sendFile("index.html")
+    res.sendfile("index.html")
 })
