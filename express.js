@@ -10,7 +10,7 @@ var path = require('path')
 require('dotenv').config();
 var port = 5000;
 
-app.use(express.static(path.join(__dirname, "build")));
+app.use(express.static("build"));
 app.use(bodyParser.json({ type: 'application/json' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
