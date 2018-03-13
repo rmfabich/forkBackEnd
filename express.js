@@ -38,7 +38,7 @@ MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds2
     db = client.db("fork_demo_app")// whatever your database name is
     app.listen(process.env.PORT || 5000, () => {
         //console.log(process.env.PORT)
-        console.log("listening on" + process.env.PORT || 5000);
+        console.log(`listening on ${process.env.PORT || 5000}`);
     })
 })
 
@@ -52,30 +52,41 @@ app.post("/createAcct", (req, res) => {
                 bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
                     db.collection('users').save({ userName: req.body.userName, password: hash }, (err, result) => {
                         if (err) {
-                            res.json("Failed")
+                            res.json({
+                                message: "Failed"
+                            })
                             return console.log(err);
                         } else {
-                            res.json("Account created successfully")
+                            res.json({
+                                message: "Account created successfully"
+                            })
                             console.log('saved to database');
                         }
                     });
                 });
             } else {
-                res.json("This username already exists")
+                res.json({
+                    message: "This username already exists"
+                })
             }
         })
     } else {
-        res.json("Error: username or password cannot be blank")
+        res.json({
+            message: "Error: username or password cannot be blank"
+        })
     }
 });
 //Logs in existing user
-app.post('/logIn', (req, res) => {
+app.post('/login', (req, res) => {
     db.collection('users').find({ userName: req.body.userName }).toArray((err, user) => {
         if (!user.length) {
-            res.json('Login unsuccessful');
+            res.json({
+                message: 'Login unsuccessful'
+            })
         } else if (err) {
-            res.json('Login unsuccessful');
-        }
+            res.json({
+                message: 'Login unsuccessful'
+        })
         bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
             if (resolve === true) {
                 var token = jwt.sign(req.body.userName, ('Secret'), {
