@@ -31,8 +31,8 @@ function verifyToken(req, res, next) {
         res.send("No token")
     }
 }
-//can't get .env to work. Username and pass are hardcoded for now. 
-MongoClient.connect(`mongodb://NathanCombs:moby123@ds259768.mlab.com:59768/fork_demo_app`, (err, client) => {
+
+MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}.mlab.com:59768/fork_demo_app`, (err, client) => {
     if (err) return console.log(err)
     db = client.db("fork_demo_app")// whatever your database name is
     app.listen(process.env.PORT || 5000, () => {
