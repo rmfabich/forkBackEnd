@@ -68,7 +68,7 @@ app.post("/createAcct", (req, res) => {
     }
 });
 //Logs in existing user
-app.post('/logIn', (req, res) => {
+app.post('/login', (req, res) => {
     db.collection('users').find({ userName: req.body.userName }).toArray((err, user) => {
         console.log(user);
         if (!user.length) {
