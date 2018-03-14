@@ -42,10 +42,12 @@ MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds2
     })
 })
 
+app.get("/", (req, res) => {
+    res.sendfile("index.html")
+})
 
 //Creates a new account
 app.post("/createAcct", (req, res) => {
-    console.log(req.body);
     if (req.body.userName.length && req.body.password.length) {
         db.collection('users').find({ userName: req.body.userName }).toArray((err, dataMatch) => {
             if (!dataMatch.length) {
@@ -53,27 +55,24 @@ app.post("/createAcct", (req, res) => {
                     db.collection('users').save({ userName: req.body.userName, password: hash }, (err, result) => {
                         if (err) {
                             res.json({
-                                message: "Failed"
-                            })
-                            return console.log(err);
+                                message: "Failed"});
                         } else {
                             res.json({
                                 message: "Account created successfully"
-                            })
-                            console.log('saved to database');
+                            });
                         }
                     });
                 });
             } else {
                 res.json({
                     message: "This username already exists"
-                })
+                });
             }
         })
     } else {
         res.json({
             message: "Error: username or password cannot be blank"
-        })
+        });
     }
 });
 //Logs in existing user
@@ -81,12 +80,13 @@ app.post('/login', (req, res) => {
     db.collection('users').find({ userName: req.body.userName }).toArray((err, user) => {
         if (!user.length) {
             res.json({
-                message: 'Login unsuccessful'
-            })
+                message: 'Username/Password do not match'
+            });
         } else if (err) {
             res.json({
-                message: 'Login unsuccessful'
-        })
+                message: 'err'
+        });
+     } else {
         bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
             if (resolve === true) {
                 var token = jwt.sign(req.body.userName, ('Secret'), {
@@ -97,14 +97,16 @@ app.post('/login', (req, res) => {
                 });
             } else if (resolve === false) {
                 res.json({
-                    message: 'Login failed',
+                    message: 'Username/Password does not match',
                 })
             }
-        })
-        })
-
+        });
+        }
     })
+});
 
-app.get("/", (req, res) => {
-    res.sendfile("index.html")
+app.post('/findRoute', verifyToken, (req, res) => {
+    db.collection('users').find({ userName: res.locals.decode }).toArray((err, dataMatch) => {
+        res.json(dataMatch)
+    });
 })
