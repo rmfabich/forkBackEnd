@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
 })
 
 //Creates a new account
-app.post("/createAcct", (req, res) => {
+app.post("/createAcctData", (req, res) => {
     if (req.body.userName.length && req.body.password.length) {
         db.collection('users').find({ userName: req.body.userName }).toArray((err, dataMatch) => {
             if (!dataMatch.length) {
@@ -76,15 +76,15 @@ app.post("/createAcct", (req, res) => {
     }
 });
 //Logs in existing user
-app.post('/login', (req, res) => {
+app.post('/loginData', (req, res) => {
     db.collection('users').find({ userName: req.body.userName }).toArray((err, user) => {
         if (!user.length) {
             res.json({
-                message: 'Username/Password do not match'
+                message: 'Login unsuccessfull'
             });
         } else if (err) {
             res.json({
-                message: 'err'
+                message: 'Login unsuccessfull'
         });
      } else {
         bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
@@ -97,7 +97,7 @@ app.post('/login', (req, res) => {
                 });
             } else if (resolve === false) {
                 res.json({
-                    message: 'Username/Password does not match',
+                    message: 'Password does not match',
                 })
             }
         });
@@ -105,8 +105,3 @@ app.post('/login', (req, res) => {
     })
 });
 
-app.post('/findRoute', verifyToken, (req, res) => {
-    db.collection('users').find({ userName: res.locals.decode }).toArray((err, dataMatch) => {
-        res.json(dataMatch)
-    });
-})
