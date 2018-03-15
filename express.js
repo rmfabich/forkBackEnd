@@ -42,10 +42,12 @@ MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds2
     })
 })
 
+app.get("/", (req, res) => {
+    res.sendfile("index.html")
+})
 
 //Creates a new account
-app.post("/createAcct", (req, res) => {
-    console.log(req.body);
+app.post("/createAcctData", (req, res) => {
     if (req.body.userName.length && req.body.password.length) {
         db.collection('users').find({ userName: req.body.userName }).toArray((err, dataMatch) => {
             if (!dataMatch.length) {
@@ -53,61 +55,57 @@ app.post("/createAcct", (req, res) => {
                     db.collection('users').save({ userName: req.body.userName, password: hash }, (err, result) => {
                         if (err) {
                             res.json({
-                                message: "Failed"
-                            })
-                            return console.log(err);
+                                message: "Failed"});
                         } else {
                             res.json({
                                 message: "Account created successfully"
-                            })
-                            console.log('saved to database');
+                            });
                         }
                     });
                 });
             } else {
                 res.json({
                     message: "This username already exists"
-                })
+                });
             }
         })
     } else {
         res.json({
             message: "Error: username or password cannot be blank"
-        })
+        });
     }
 });
 //Logs in existing user
-app.post('/login', (req, res) => {
+app.post('/loginData', (req, res) => {
     db.collection('users').find({ userName: req.body.userName }).toArray((err, user) => {
         console.log(user);
         if (!user.length) {
             res.json({
-                message: 'Login unsuccessful'
-            })
+                message: 'Login unsuccessfull'
+            });
         } else if (err) {
             res.json({
-                message: 'Login unsuccessful'
-            })
-            bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
-                if (resolve === true) {
-                    var token = jwt.sign(req.body.userName, ('Secret'), {
-                    });
-                    res.json({
-                        message: 'Login successful',
-                        myToken: token
-                    });
-                } else if (resolve === false) {
-                    res.json({
-                        message: 'Login failed',
-                    })
-                }
-            })
+                message: 'Login unsuccessfull'
+        });
+     } else {
+        bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
+            if (resolve === true) {
+                var token = jwt.sign(req.body.userName, ('Secret'), {
+                });
+                res.json({
+                    message: 'Login successful',
+                    myToken: token
+                });
+            } else if (resolve === false) {
+                res.json({
+                    message: 'Password does not match',
+                })
+            }
+        });
         }
-
     })
-})
+});
 
-//Adds new recipe
 app.post('/submitRecipe', (req, res) => {
     if (req.body.title.length && req.body.ingredients.length && req.body.process.length) {
         db.collection('recipes').find({ title: req.body.title }).toArray((err, title) => {
@@ -134,8 +132,4 @@ app.post('/submitRecipe', (req, res) => {
             message: 'Your recipe should probably contain more recipe'
         })
     }
-})
-
-app.get("/", (req, res) => {
-    res.sendfile("index.html")
 })
