@@ -87,24 +87,54 @@ app.post('/login', (req, res) => {
         } else if (err) {
             res.json({
                 message: 'Login unsuccessful'
-        })
-        bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
-            if (resolve === true) {
-                var token = jwt.sign(req.body.userName, ('Secret'), {
-                });
+            })
+            bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
+                if (resolve === true) {
+                    var token = jwt.sign(req.body.userName, ('Secret'), {
+                    });
+                    res.json({
+                        message: 'Login successful',
+                        myToken: token
+                    });
+                } else if (resolve === false) {
+                    res.json({
+                        message: 'Login failed',
+                    })
+                }
+            })
+        }
+
+    })
+})
+
+//Adds new recipe
+app.post('/submitRecipe', (req, res) => {
+    if (req.body.title.length && req.body.ingredients.length && req.body.process.length) {
+        db.collection('recipes').find({ title: req.body.title }).toArray((err, title) => {
+            if(!title.length) {
+                db.collection('recipes').save({ title: req.body.title, ingredients: req.body.ingredients, process: req.body.proccess }, (err, result) => {
+                    if (err) {
+                        res.json({
+                            message: "Oh no! Something went wrong with adding your recipe"
+                        })
+                    } else {
+                        res.json({
+                            message: "Thanks for the recipe!"
+                        })
+                    }
+                })
+            } else {
                 res.json({
-                    message: 'Login successful',
-                    myToken: token
-                });
-            } else if (resolve === false) {
-                res.json({
-                    message: 'Login failed',
+                    message: 'Gosh...a recipe with that name already exists'
                 })
             }
         })
+    } else {
+        res.json({
+            message: 'Your recipe should probably contain more recipe'
         })
-
-    })
+    }
+})
 
 app.get("/", (req, res) => {
     res.sendfile("index.html")
