@@ -78,6 +78,7 @@ app.post("/createAcctData", (req, res) => {
 //Logs in existing user
 app.post('/loginData', (req, res) => {
     db.collection('users').find({ userName: req.body.userName }).toArray((err, user) => {
+        console.log(user);
         if (!user.length) {
             res.json({
                 message: 'Login unsuccessfull'
@@ -105,3 +106,30 @@ app.post('/loginData', (req, res) => {
     })
 });
 
+app.post('/submitRecipe', (req, res) => {
+    if (req.body.title.length && req.body.ingredients.length && req.body.process.length) {
+        db.collection('recipes').find({ title: req.body.title }).toArray((err, title) => {
+            if(!title.length) {
+                db.collection('recipes').save({ title: req.body.title, ingredients: req.body.ingredients, process: req.body.proccess }, (err, result) => {
+                    if (err) {
+                        res.json({
+                            message: "Oh no! Something went wrong with adding your recipe"
+                        })
+                    } else {
+                        res.json({
+                            message: "Thanks for the recipe!"
+                        })
+                    }
+                })
+            } else {
+                res.json({
+                    message: 'Gosh...a recipe with that name already exists'
+                })
+            }
+        })
+    } else {
+        res.json({
+            message: 'Your recipe should probably contain more recipe'
+        })
+    }
+})
