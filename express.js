@@ -110,7 +110,7 @@ app.post('/submitRecipe', (req, res) => {
     if (req.body.title.length && req.body.ingredients.length && req.body.process.length) {
         db.collection('recipes').find({ title: req.body.title }).toArray((err, title) => {
             if(!title.length) {
-                db.collection('recipes').save({ title: req.body.title, ingredients: req.body.ingredients, process: req.body.proccess }, (err, result) => {
+                db.collection('recipes').save({ title: req.body.title, ingredients: req.body.ingredients, process: req.body.process }, (err, result) => {
                     if (err) {
                         res.json({
                             message: "Oh no! Something went wrong with adding your recipe"
@@ -132,4 +132,11 @@ app.post('/submitRecipe', (req, res) => {
             message: 'Your recipe should probably contain more recipe'
         })
     }
+})
+
+app.post('/listRecipes', (req, res) => {
+    var recipeList = [];
+    db.collection('recipes').find().toArray((err, recipeList) => {
+        res.json(recipeList); //returns an array where each recipe in db is an object
+    })
 })
