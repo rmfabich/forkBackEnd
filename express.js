@@ -37,7 +37,6 @@ MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds2
     if (err) return console.log(err)
     db = client.db("fork_demo_app")// whatever your database name is
     app.listen(process.env.PORT || 5000, () => {
-        //console.log(process.env.PORT)
         console.log(`listening on ${process.env.PORT || 5000}`);
     })
 })
@@ -49,7 +48,8 @@ app.get("/", (req, res) => {
 //Creates a new account
 app.post("/createAcctData", (req, res) => {
     if (req.body.userName.length && req.body.password.length) {
-        db.collection('users').find({ userName: req.body.userName }).toArray((err, dataMatch) => {
+        var ciUserName = new RegExp(req.body.userName, "gi");
+        db.collection('users').find({ userName: ciUserName }).toArray((err, dataMatch) => {
             if (!dataMatch.length) {
                 bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
                     db.collection('users').save({ userName: req.body.userName, password: hash }, (err, result) => {
@@ -109,9 +109,10 @@ app.post('/loginData', (req, res) => {
 
 app.post('/submitRecipe', (req, res) => {
     if (req.body.title.length && req.body.ingredients.length && req.body.process.length) {
-        db.collection('recipes').find({ title: req.body.title }).toArray((err, title) => {
-            if (!title.length) {
-                db.collection('recipes').save({ title: req.body.title, ingredients: req.body.ingredients, process: req.body.proccess }, (err, result) => {
+        var ciRecipeTitle = new RegExp(req.body.title, "gi");
+        db.collection('recipes').find({ title: ciRecipeTitle }).toArray((err, title) => {
+            if(!title.length) {
+                db.collection('recipes').save({ title: req.body.title, author: req.body.author, ingredients: req.body.ingredients, process: req.body.process }, (err, result) => {
                     if (err) {
                         res.json({
                             message: "Oh no! Something went wrong with adding your recipe"
@@ -135,6 +136,41 @@ app.post('/submitRecipe', (req, res) => {
     }
 })
 
+app.post('/listRecipes', (req, res) => {
+    var recipeList = [];
+    db.collection('recipes').find().toArray((err, recipeList) => {
+        res.json(recipeList); //returns an array where each recipe in db is an object
+    })
+})
+
+app.post('/getUser', (req, res) => {
+    console.log(req.body.token);
+    var decoded = jwt.verify(req.body.token, 'Secret');
+    res.json(decoded);
+})
+
+app.post('/forkRecipe', (req, res) => {
+    let forkAuthor = jwt.verify(req.body.token, 'Secret');
+    db.collection('recipes').find({ title: `${forkAuthor}' Fork of ${req.body.title}` }).toArray((err, title) => {
+        if (!title.length) {
+            if (forkAuthor[forkAuthor.length-1] == "s") {
+                db.collection('recipes').save({ 
+                    title: `${forkAuthor}' Fork of ${req.body.title}`, author: forkAuthor, forkOf: req.body.title, ingredients: req.body.ingredients, process: req.body.process 
+                }, (err, result) => {
+                    res.json({ message: `Successfully forked ${req.body.title}`});
+                });
+            } else {
+                db.collection('recipes').save({ 
+                    title: `${forkAuthor}'s Fork of ${req.body.title}`, author: forkAuthor, forkOf: req.body.title, ingredients: req.body.ingredients, process: req.body.process 
+                }, (err, result) => {
+                    res.json({ message: `Successully forked ${req.body.title}`});
+                });
+            };
+        } else {
+            res.json({ message: 'Looks like you already have an unchanged fork of this recipe'});
+        }
+    });
+});
 app.post("/search", function (req, res) {
     console.log(req.body.ingredients);
     if (req.body.ingredients.length) {
