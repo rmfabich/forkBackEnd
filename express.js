@@ -171,19 +171,15 @@ app.post('/forkRecipe', (req, res) => {
         }
     });
 });
-app.post("/search", function (req, res) {
-    console.log(req.body.ingredients);
-    if (req.body.ingredients.length) {
+app.post("/searchRecipe", function (req, res) {
+    let regex = new RegExp(`${req.body.ingredient}`)
+    if (req.body.ingredient) {
         db.collection('recipes').find({
-            "text": {
-                "search": {
-                    "match": {
-                        "_all": req.body.query
-                    }
-                }
-            }
-        }).toArray((err, ingredients) => {
-            if (!ingredients.length) {
+            "ingredients": {$regex: regex}
+        }).toArray((err, recipes) => {
+            console.log(recipes);
+            if (err) console.log(err)
+            if (!recipes.length) {
                 db.collection('recipes').find({ ingredients: req.body.query }, (err, result) => {
                     if (err) {
                         res.json({
@@ -194,35 +190,16 @@ app.post("/search", function (req, res) {
                             message: req.body
                         })
                     }
-                })}})
-            } else {
-                res.json({
-                    message: "Cannot be blank"
                 })
+            } else {
+                console.log(recipes)
+                res.json(recipes);
             }
         })
+    } else {
+        res.json({
+            message: "Cannot be blank"
+        })
+    }
+})
 
-// app.post('/search', (req, res) => {
-//    var search = /${req.body.ingredients}/
-//     if (req.body.ingredients.length) {
-//         db.collection('recipes').find({ ingredients: [req.body.ingredients] }).toArray((err, ingredients) => {
-//             if (!ingredients.length) {
-//                 db.collection('recipes').find({ ingredients: search}, (err, result) => {
-//                     if (err) {
-//                         res.json({
-//                             message: "No recipe found"
-//                         });
-//                     } else {
-//                         res.json({
-//                             message: req.body.title
-//                         })
-//                     }
-//                 })
-//             }
-//         })
-//     } else {
-//         res.json({
-//             message: "Cannot be blank"
-//         })
-//     }
-// })
