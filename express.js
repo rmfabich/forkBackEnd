@@ -143,6 +143,30 @@ app.post('/listRecipes', (req, res) => {
 })
 
 app.post('/getUser', (req, res) => {
+    console.log(req.body.token);
     var decoded = jwt.verify(req.body.token, 'Secret');
     res.json(decoded);
 })
+
+app.post('/forkRecipe', (req, res) => {
+    let forkAuthor = jwt.verify(req.body.token, 'Secret');
+    db.collection('recipes').find({ title: `${forkAuthor}' Fork of ${req.body.title}` }).toArray((err, title) => {
+        if (!title.length) {
+            if (forkAuthor[forkAuthor.length-1] == "s") {
+                db.collection('recipes').save({ 
+                    title: `${forkAuthor}' Fork of ${req.body.title}`, author: forkAuthor, forkOf: req.body.title, ingredients: req.body.ingredients, process: req.body.process 
+                }, (err, result) => {
+                    res.json({ message: `Successfully forked ${req.body.title}`});
+                });
+            } else {
+                db.collection('recipes').save({ 
+                    title: `${forkAuthor}'s Fork of ${req.body.title}`, author: forkAuthor, forkOf: req.body.title, ingredients: req.body.ingredients, process: req.body.process 
+                }, (err, result) => {
+                    res.json({ message: `Successully forked ${req.body.title}`});
+                });
+            };
+        } else {
+            res.json({ message: 'Looks like you already have an unchanged fork of this recipe'});
+        }
+    });
+});
