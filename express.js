@@ -167,7 +167,10 @@ app.post('/forkRecipe', (req, res) => {
                 });
             };
         } else {
-            res.json({ message: 'Looks like you already have an unchanged fork of this recipe'});
+            res.json({ 
+                message: 'Looks like you already have an unchanged fork of this recipe',
+                recipe: db.collection('recipes').find({ title: `${forkAuthor}'s Fork of ${req.body.title}` })
+            });
         }
     });
 });
