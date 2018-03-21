@@ -55,7 +55,8 @@ app.post("/createAcctData", (req, res) => {
                     db.collection('users').save({ userName: req.body.userName, password: hash }, (err, result) => {
                         if (err) {
                             res.json({
-                                message: "Failed"});
+                                message: "Failed"
+                            });
                         } else {
                             res.json({
                                 message: "Account created successfully"
@@ -86,22 +87,22 @@ app.post('/loginData', (req, res) => {
         } else if (err) {
             res.json({
                 message: 'Login unsuccessfull'
-        });
-     } else {
-        bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
-            if (resolve === true) {
-                var token = jwt.sign(req.body.userName, ('Secret'), {
-                });
-                res.json({
-                    message: 'Login successful',
-                    myToken: token
-                });
-            } else if (resolve === false) {
-                res.json({
-                    message: 'Password does not match',
-                })
-            }
-        });
+            });
+        } else {
+            bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
+                if (resolve === true) {
+                    var token = jwt.sign(req.body.userName, ('Secret'), {
+                    });
+                    res.json({
+                        message: 'Login successful',
+                        myToken: token
+                    });
+                } else if (resolve === false) {
+                    res.json({
+                        message: 'Password does not match',
+                    })
+                }
+            });
         }
     })
 });
@@ -109,7 +110,7 @@ app.post('/loginData', (req, res) => {
 app.post('/submitRecipe', (req, res) => {
     if (req.body.title.length && req.body.ingredients.length && req.body.process.length) {
         db.collection('recipes').find({ title: req.body.title }).toArray((err, title) => {
-            if(!title.length) {
+            if (!title.length) {
                 db.collection('recipes').save({ title: req.body.title, ingredients: req.body.ingredients, process: req.body.proccess }, (err, result) => {
                     if (err) {
                         res.json({
@@ -133,3 +134,59 @@ app.post('/submitRecipe', (req, res) => {
         })
     }
 })
+
+app.post("/search", function (req, res) {
+    console.log(req.body.ingredients);
+    if (req.body.ingredients.length) {
+        db.collection('recipes').find({
+            "text": {
+                "search": {
+                    "match": {
+                        "_all": req.body.query
+                    }
+                }
+            }
+        }).toArray((err, ingredients) => {
+            if (!ingredients.length) {
+                db.collection('recipes').find({ ingredients: req.body.query }, (err, result) => {
+                    if (err) {
+                        res.json({
+                            message: "No recipe found"
+                        });
+                    } else {
+                        res.json({
+                            message: req.body
+                        })
+                    }
+                })}})
+            } else {
+                res.json({
+                    message: "Cannot be blank"
+                })
+            }
+        })
+
+// app.post('/search', (req, res) => {
+//    var search = /${req.body.ingredients}/
+//     if (req.body.ingredients.length) {
+//         db.collection('recipes').find({ ingredients: [req.body.ingredients] }).toArray((err, ingredients) => {
+//             if (!ingredients.length) {
+//                 db.collection('recipes').find({ ingredients: search}, (err, result) => {
+//                     if (err) {
+//                         res.json({
+//                             message: "No recipe found"
+//                         });
+//                     } else {
+//                         res.json({
+//                             message: req.body.title
+//                         })
+//                     }
+//                 })
+//             }
+//         })
+//     } else {
+//         res.json({
+//             message: "Cannot be blank"
+//         })
+//     }
+// })
