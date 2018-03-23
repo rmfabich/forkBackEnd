@@ -79,7 +79,6 @@ app.post("/createAcctData", (req, res) => {
 //Logs in existing user
 app.post('/loginData', (req, res) => {
     db.collection('users').find({ userName: req.body.userName }).toArray((err, user) => {
-        console.log(user);
         if (!user.length) {
             res.json({
                 message: 'Login unsuccessfull'
@@ -172,8 +171,8 @@ app.post('/forkRecipe', (req, res) => {
     });
 });
 app.post("/searchRecipe", function (req, res) {
-    let regex = new RegExp(`${req.body.ingredient}`)
-    if (req.body.ingredient) {
+    let regex = new RegExp(`${req.body.ingredients}`)
+    if (req.body.ingredients) {
         db.collection('recipes').find({
             "ingredients": {$regex: regex}
         }).toArray((err, recipes) => {
@@ -192,7 +191,6 @@ app.post("/searchRecipe", function (req, res) {
                     }
                 })
             } else {
-                console.log(recipes)
                 res.json(recipes);
             }
         })
