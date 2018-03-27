@@ -106,6 +106,14 @@ app.post('/loginData', (req, res) => {
     })
 });
 
+// app.delete('/logoutData', function (req, res, next) {
+//     // delete req.session.authenticated;
+//     res.json({
+//         message: "Logged out"
+//     });
+// });
+
+
 app.post('/submitRecipe', (req, res) => {
     if (req.body.title.length && req.body.ingredients.length && req.body.process.length) {
         var ciRecipeTitle = new RegExp(req.body.title, "gi");
@@ -143,7 +151,7 @@ app.post('/listRecipes', (req, res) => {
 })
 
 app.post('/getUser', (req, res) => {
-    console.log(req.body.token);
+    // console.log(req.body.token);
     var decoded = jwt.verify(req.body.token, 'Secret');
     res.json(decoded);
 })
