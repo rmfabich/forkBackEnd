@@ -143,43 +143,49 @@ app.post('/listRecipes', (req, res) => {
 })
 
 app.post('/getUser', (req, res) => {
-    console.log(req.body.token);
     var decoded = jwt.verify(req.body.token, 'Secret');
     res.json(decoded);
 })
 
 app.post('/forkRecipe', (req, res) => {
     let forkAuthor = jwt.verify(req.body.token, 'Secret');
-    db.collection('recipes').find({ title: `${forkAuthor}' Fork of ${req.body.title}` }).toArray((err, title) => {
+    db.collection('recipes').find({ 
+        $or: [
+            {title: `${forkAuthor}' Fork of ${req.body.title}`}, 
+            {title: `${forkAuthor}'s Fork of ${req.body.title}`}
+        ] 
+    }).toArray((err, title) => {
         if (!title.length) {
             if (forkAuthor[forkAuthor.length-1] == "s") {
                 db.collection('recipes').save({ 
                     title: `${forkAuthor}' Fork of ${req.body.title}`, author: forkAuthor, forkOf: req.body.title, ingredients: req.body.ingredients, process: req.body.process 
                 }, (err, result) => {
-                    res.json({ message: `Successfully forked ${req.body.title}`});
+                    res.json({ 
+                        message: `Successfully forked ${req.body.title}`});
                 });
             } else {
                 db.collection('recipes').save({ 
                     title: `${forkAuthor}'s Fork of ${req.body.title}`, author: forkAuthor, forkOf: req.body.title, ingredients: req.body.ingredients, process: req.body.process 
                 }, (err, result) => {
-                    res.json({ message: `Successully forked ${req.body.title}`});
+                    res.json({ 
+                        message: `Successully forked ${req.body.title}`,
+                    });
                 });
             };
         } else {
             res.json({ 
                 message: 'Looks like you already have an unchanged fork of this recipe',
-                recipe: db.collection('recipes').find({ title: `${forkAuthor}'s Fork of ${req.body.title}` })
             });
         }
     });
 });
+
 app.post("/searchRecipe", function (req, res) {
     let regex = new RegExp(`${req.body.ingredients}`)
     if (req.body.ingredients) {
         db.collection('recipes').find({
             "ingredients": {$regex: regex}
         }).toArray((err, recipes) => {
-            console.log(recipes);
             if (err) console.log(err)
             if (!recipes.length) {
                 db.collection('recipes').find({ ingredients: req.body.query }, (err, result) => {
@@ -204,3 +210,14 @@ app.post("/searchRecipe", function (req, res) {
     }
 })
 
+app.post('/myForks', (req, res) => {
+    let forkAuthor = jwt.verify(req.body.token, 'Secret');
+    db.collection('recipes').find({ author: forkAuthor }).toArray((err, myForks) => {
+        if (myForks.length) {
+            res.json({
+                recipes: myForks,
+                user: forkAuthor,
+            })
+        } else res.json("Better start forking!")
+    })
+})
